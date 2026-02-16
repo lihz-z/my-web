@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>李海志 | 个人简历网页</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-blue: #0A192F;
+            --accent-green: #64FFDA;
+            --text-main: #2D3436;
+            --text-light: #636E72;
+            --bg-light: #F8F9FA;
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        /* --- 背景图核心设置 --- */
+        .fixed-bg {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            /* 请确保图片文件名正确，并与HTML在同级目录 */
+            background: url('v2-fb9c9290d3d297bae3a56974d139c59c_r.png') center/cover no-repeat;
+            z-index: -2;
+            transition: filter 0.6s ease, transform 0.6s ease;
+        }
+
+        /* 背景遮罩：用于滚动时加深颜色 */
+        .bg-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0);
+            z-index: -1;
+            transition: background 0.6s ease;
+        }
+
+        /* 当页面滚动时，由JS触发此样式 */
+        body.is-scrolled .fixed-bg {
+            filter: blur(10px);
+            transform: scale(1.05);
+        }
+        body.is-scrolled .bg-overlay {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        /* --- 基础样式保持不变 --- */
+        #progress-bar {
+            position: fixed; top: 0; left: 0; width: 0%; height: 4px;
+            background: var(--accent-green); z-index: 2000; transition: width 0.1s;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3 { font-family: 'Playfair Display', serif; }
+
+        /* 导航栏 */
+        nav {
+            position: fixed; width: 100%; top: 0; padding: 25px 50px;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 1000; transition: var(--transition);
+        }
+        nav.scrolled {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            padding: 15px 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        /* --- 专属图形 Logo 样式 --- */
+        .logo-brand {
+            display: flex;
+            align-items: center;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+        .logo-brand svg {
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+            transition: transform 0.3s ease;
+        }
+
+        .logo-brand:hover svg {
+            transform: rotate(5deg) scale(1.1);
+        }
+
+/* 滚动到下方白色背景时，改变 Logo 形状的颜色（可选，建议保持原色以增加辨识度） */
+nav.scrolled .logo-brand svg path {
+    fill: var(--primary-blue);
+}
+
+        .nav-menu { display: flex; gap: 35px; list-style: none; }
+        .nav-menu a {
+            text-decoration: none; color: var(--primary-blue);
+            font-weight: 600; font-size: 1.3rem; text-transform: uppercase;
+            position: relative; transition: var(--transition);
+        }
+        .nav-menu a::after {
+            content: ''; position: absolute; bottom: -5px; left: 0;
+            width: 0; height: 2px; background: var(--accent-green);
+            transition: var(--transition);
+        }
+        .nav-menu a:hover::after { width: 100%; }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 20px; }
+        /* --- 修改：使每一页都占满屏幕 --- */
+        section {
+            min-height: 100vh;      /* 核心：最小高度为屏幕 100% */
+            display: flex;          /* 使用弹性布局 */
+            align-items: center;    /* 垂直居中 */
+            justify-content: center;/* 水平居中 */
+            padding: 80px 0;        /* 预留导航栏空间 */
+            opacity: 0;
+            transform: translateY(30px);
+            transition: 1s ease-out;
+            box-sizing: border-box;
+        }
+
+        /* 首页已有高度设置，保持一致性 */
+        #home {
+            height: 100vh;
+        }
+
+        /* 针对全屏化后的容器宽度微调，确保内容舒展 */
+        .glass-panel {
+            width: 100%;            /* 撑满 container */
+            max-height: 85vh;       /* 防止内容过多溢出屏幕 */
+            overflow-y: auto;       /* 内容过多时内部滚动 */
+        }
+
+        /* 隐藏全屏滚动时的内部滚动条（可选，美化界面） */
+        .glass-panel::-webkit-scrollbar {
+            width: 0px;
+        }
+        section.appear { opacity: 1; transform: translateY(0); }
+
+        /* Hero区卡片 */
+        #home {
+            height: 100vh; display: flex; align-items: center;
+            opacity: 1; transform: none;
+        }
+        .hero-glass-card {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            padding: 50px; border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            display: grid; grid-template-columns: 1.2fr 0.8fr; align-items: center; gap: 40px;
+        }
+        .hero-text h1 { font-size: 5rem; color: var(--primary-blue); margin-bottom: 10px; }
+        .hero-text .subtitle { 
+            font-size: 1.2rem; color: var(--accent-green); background: var(--primary-blue);
+            display: inline-block; padding: 5px 15px; margin-bottom: 25px; 
+        }
+
+        /* 杂志排版卡片 */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            padding: 60px; border-radius: 40px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.05);
+        }
+
+        .section-title { font-size: 2.8rem; margin-bottom: 60px; color: var(--primary-blue); }
+
+        /* 统计与时间线 */
+        .stat-card {
+            background: white; padding: 35px; border-radius: 20px;
+            text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
+        .timeline { border-left: 2px solid #EEE; margin-left: 40px; padding-left: 60px; position: relative; }
+        .timeline-item { position: relative; margin-bottom: 60px; }
+        .timeline-item::before {
+            content: ''; position: absolute; left: -71px; top: 10px;
+            width: 20px; height: 20px; background: var(--accent-green);
+            border: 4px solid white; border-radius: 50%;
+        }
+
+        /* 技能标签 */
+        .tag {
+            background: #fff; padding: 10px 22px; border-radius: 50px;
+            font-size: 0.95rem; display: flex; align-items: center; gap: 10px;
+            transition: var(--transition); border: 1px solid #eee;
+        }
+        .tag:hover { background: var(--primary-blue); color: #fff; transform: scale(1.05); }
+
+        footer { background: var(--primary-blue); color: white; padding: 100px 0; text-align: center; }
+
+        @media (max-width: 992px) {
+            .nav-menu { display: none; }
+            .hero-glass-card { grid-template-columns: 1fr; text-align: center; }
+            .hero-text h1 { font-size: 3.5rem; }
+        }
+
+        /* --- 电话和邮箱的圆条框样式 --- */
+        .copy-trigger {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.15); /* 半透明白 */
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 20px;
+            margin: 5px 10px;
+            border-radius: 50px; /* 完美圆角 */
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .copy-trigger:hover {
+            background: white;
+            color: var(--primary-blue);
+            transform: translateY(-2px);
+        }
+
+        /* --- 全局复制弹窗样式 --- */
+        #copy-toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--accent-green);
+            color: var(--primary-blue);
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 700;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 9999;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #copy-toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="progress-bar"></div>
+    <div class="fixed-bg"></div>
+    <div class="bg-overlay"></div>
+
+    <nav id="navbar">
+        <a href="#home" class="logo-brand">
+    <svg width="45" height="45" viewBox="0 0 200 200">
+        <path fill="#0A192F" d="M40,-60C54.2,-54.2,69.5,-46.3,77.5,-33.9C85.5,-21.5,86.2,-4.5,81.3,10.6C76.4,25.7,65.9,39,53.8,49.2C41.7,59.3,28.1,66.4,13.7,69.5C-0.7,72.6,-15.8,71.8,-30,66.4C-44.2,61.1,-57.4,51.2,-65.7,38.1C-74.1,25.1,-77.5,8.8,-75,-6.2C-72.5,-21.2,-64,-35.1,-52.4,-42.2C-40.8,-49.3,-26.1,-49.7,-13.1,-55.8C-0.1,-61.8,13.2,-73.5,27.1,-73.9C40.9,-74.3,55.3,-63.3,40,-60Z" transform="translate(100 100)" />
+        <text x="50%" y="55%" font-family="Playfair Display" font-size="60" fill="#64FFDA" text-anchor="middle" dominant-baseline="middle">LHZ</text>
+    </svg>
+        </a>
+        <ul class="nav-menu">
+            <li><a href="#home">首页</a></li>
+            <li><a href="#about">关于我</a></li>
+            <li><a href="#experience">经历</a></li>
+            <li><a href="#skills">技能</a></li>
+            <li><a href="#projects">项目</a></li>
+        </ul>
+        <div class="nav-right">
+            <a href="#footer-contact" style="margin-right:15px;"><i class="fas fa-envelope"></i></a>
+            <a href="#footer-contact"><i class="fas fa-phone"></i></a>
+        </div>
+    </nav>
+
+    <section id="home">
+        <div class="container">
+            <div class="hero-glass-card">
+                <div class="hero-text">
+                    <span class="subtitle">交通工程 · 2026</span>
+                    <h1>李海志</h1>
+                    <p style="font-size: 1.25rem; color: #121212; margin-bottom: 35px;">
+                        中山大学学子，专注于智能仿真、交通规划与 AI 开发。
+                    </p>
+                    <div class="contact-fast">
+                        <span><i class="fas fa-location-dot"></i> 广州 · 中山大学</span>
+                    </div>
+                </div>
+                <div style="text-align:center">
+                    <svg width="250" height="250" viewBox="0 0 200 200">
+                        <path fill="#0A192F" d="M40,-60C54.2,-54.2,69.5,-46.3,77.5,-33.9C85.5,-21.5,86.2,-4.5,81.3,10.6C76.4,25.7,65.9,39,53.8,49.2C41.7,59.3,28.1,66.4,13.7,69.5C-0.7,72.6,-15.8,71.8,-30,66.4C-44.2,61.1,-57.4,51.2,-65.7,38.1C-74.1,25.1,-77.5,8.8,-75,-6.2C-72.5,-21.2,-64,-35.1,-52.4,-42.2C-40.8,-49.3,-26.1,-49.7,-13.1,-55.8C-0.1,-61.8,13.2,-73.5,27.1,-73.9C40.9,-74.3,55.3,-63.3,40,-60Z" transform="translate(100 100)" />
+                        <text x="50%" y="55%" font-family="Playfair Display" font-size="60" fill="#64FFDA" text-anchor="middle" dominant-baseline="middle">LHZ</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="container">
+        <div class="glass-panel">
+            <h2 class="section-title">👤 关于我</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center;">
+                <div>
+                    <p>我具备扎实的交通理论基础，擅长利用数字化工具对复杂交通行为进行建模。在红楼绿瓦的中大校园里，我不断探索 PyTorch 等深度学习框架在交通预测中的潜力。</p>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="stat-card">
+                        <i class="fas fa-graduation-cap" style="color:var(--accent-green); font-size: 2rem;"></i>
+                        <h3 style="margin-top:10px">2026</h3>
+                        <p style="font-size:0.8rem">毕业年份</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-code" style="color:var(--accent-green); font-size: 2rem;"></i>
+                        <h3 style="margin-top:10px">AI +</h3>
+                        <p style="font-size:0.8rem">研究方向</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="experience" class="container">
+        <div class="glass-panel">
+            <h2 class="section-title">💼 经历</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <span style="font-weight:700; color:var(--accent-green); background:var(--primary-blue); padding:5px 15px; border-radius:20px;">2022.09 - 2026.06</span>
+                    <h3 style="margin-top:20px;">中山大学 · 交通工程 </h3>
+                    <p>系统的学术训练与工程实践，专注于智能交通系统方向。</p>
+                </div>
+                <div class="timeline-item">
+                    <span style="font-weight:700; color:var(--accent-green); background:var(--primary-blue); padding:5px 15px; border-radius:20px;">2024 - 2025</span>
+                    <h3 style="margin-top:20px;">AI+ 交通流预测项目 [cite: 21]</h3>
+                    <p>基于 PyTorch 进行交通建模 [cite: 14]，在 Linux/ROS 环境下进行系统集成与数据分析 [cite: 11, 12]。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="skills" class="container">
+        <div class="glass-panel">
+            <h2 class="section-title">🛠️ 技能</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px;">
+                <div>
+                    <h3 style="margin-bottom:20px; color:var(--text-light)">交通仿真 [cite: 24]</h3>
+                    <div style="display:flex; flex-wrap:wrap; gap:10px">
+                        <div class="tag"><i class="fas fa-car"></i> VISSIM</div>
+                        <div class="tag"><i class="fas fa-route"></i> SUMO</div>
+                        <div class="tag"><i class="fas fa-map"></i> TransCAD [cite: 23]</div>
+                    </div>
+                </div>
+                <div>
+                    <h3 style="margin-bottom:20px; color:var(--text-light)">工程开发 [cite: 23]</h3>
+                    <div style="display:flex; flex-wrap:wrap; gap:10px">
+                        <div class="tag"><i class="fas fa-pencil-ruler"></i> AutoCAD</div>
+                        <div class="tag"><i class="fab fa-python"></i> Python / C++</div>
+                        <div class="tag"><i class="fab fa-linux"></i> Linux & ROS [cite: 11, 12]</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="projects" class="container">
+        <h2 class="section-title" style="color:white; text-shadow: 0 2px 10px rgba(0,0,0,0.5);"> 精选项目</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+            <div class="glass-panel" style="padding:40px">
+                <h3 style="color:var(--primary-blue)">智能网联仿真</h3>
+                <p style="margin-top:15px">基于 SUMO 与 VISSIM 的数字孪生路网构建，实现大规模流分析 [cite: 24]。</p>
+            </div>
+            <div class="glass-panel" style="padding:40px">
+                <h3 style="color:var(--primary-blue)">深度学习平台</h3>
+                <p style="margin-top:15px">利用 PyTorch 处理海量交通数据，解决预测精度难题 [cite: 14]。</p>
+            </div>
+        </div>
+    </section>
+
+    <footer id="footer-contact">
+        <div class="container">
+            <h2 style="font-size: 2.5rem; margin-bottom: 30px;">联系我 期待和您相遇</h2>
+            <div style="margin-bottom: 40px;">
+                <div class="copy-trigger" data-copy="17874388302">
+                    <i class="fas fa-phone"></i> 17874388302
+                </div>
+                <div class="copy-trigger" data-copy="lihzh75@mail2.sysu.edu.cn">
+                    <i class="fas fa-envelope"></i> lihzh75@mail2.sysu.edu.cn
+                </div>
+            </div>
+            <div id="copy-toast">复制成功！已存入剪贴板</div>
+            
+            <p style="font-size: 0.8rem; opacity: 0.4;">&copy; 2026 李海志 · 中山大学</p>
+        </div>
+    </footer>
+
+    <script>
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            const progressBar = document.getElementById('progress-bar');
+            const scrollVal = window.scrollY;
+
+            // 1. 控制背景虚化 (当滚动超过100px时触发)
+            if (scrollVal > 100) {
+                document.body.classList.add('is-scrolled');
+                nav.classList.add('scrolled');
+            } else {
+                document.body.classList.remove('is-scrolled');
+                nav.classList.remove('scrolled');
+            }
+
+            // 2. 阅读进度条
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (scrollVal / height) * 100;
+            progressBar.style.width = scrolled + "%";
+        });
+
+        // 3. 滚动淡入效果
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('appear');
+            });
+        }, { threshold: 0.3 });
+
+        document.querySelectorAll('section').forEach(section => observer.observe(section));
+
+        document.querySelectorAll('.copy-trigger').forEach(el => {
+            el.addEventListener('click', function() {
+                const text = this.getAttribute('data-copy');
+                const toast = document.getElementById('copy-toast');
+                
+                navigator.clipboard.writeText(text).then(() => {
+                    // 触发弹窗显示
+                    toast.classList.add('show');
+                    
+                    // 1.5秒后自动隐藏弹窗
+                    setTimeout(() => {
+                        toast.classList.remove('show');
+                    }, 1500);
+                }).catch(err => {
+                    console.error('无法复制', err);
+                });
+            });
+        });
+
+    </script>
+</body>
+</html>
